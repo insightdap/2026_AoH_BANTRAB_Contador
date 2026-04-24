@@ -66,7 +66,7 @@ data <- data %>%
 
 principal <- principal %>% 
   left_join(select(data,ref,eval,fecha,`Submission ID`,genero,generacion,nivel_jerarquico,tiempo_laboral),
-            by="ref")
+            by="ref", multiple = "first")
 
 principal <- principal %>% 
   mutate(estado = case_when(!is.na(`Submission ID`) ~ "Completado",
