@@ -463,7 +463,7 @@ Row {data-height=450}
 -----------------------------------------------------------------------
 
 
-```{r, include=FALSE}
+```{r}
 
 caption_icono_tooltip <- function(
   caption,
