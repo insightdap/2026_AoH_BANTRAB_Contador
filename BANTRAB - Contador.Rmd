@@ -463,6 +463,98 @@ Row {data-height=450}
 -----------------------------------------------------------------------
 
 
+```{r, include=FALSE}
+
+caption_icono_tooltip <- function(
+  caption,
+  tooltip_text = "Info"
+) {
+
+  icon_svg <- '
+    <svg id="info-icon" style="cursor:pointer;vertical-align:middle"
+         xmlns="http://www.w3.org/2000/svg"
+         width="16" height="16"
+         fill="currentColor"
+         class="bi bi-info-circle"
+         viewBox="0 0 16 16">
+      <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+      <path d="m8.93 6.588-2.29.287-.082.38.45.083
+               c.294.07.352.176.288.469L6.684 10.5
+               c-.194.897.105 1.319.808 1.319
+               .545 0 1.178-.252 1.465-.598l.088-.416
+               c-.2.176-.492.246-.686.246
+               -.275 0-.375-.193-.304-.533z"/>
+      <circle cx="8" cy="4.5" r="1"/>
+    </svg>
+  '
+
+  caption_html <- paste0(
+    '<div style="display:flex;align-items:center;gap:4px;font-size:11px;line-height:16px;min-height:16px">',
+    '<span>', caption, '</span>',
+    icon_svg,
+    '</div>'
+  )
+
+  list(
+    caption_html = caption_html,
+
+    tooltip_js = JS(sprintf("
+      function () {
+
+        const chart = this;
+
+        // buscar el icono SOLO dentro del gráfico
+        const info = chart.renderTo.querySelector('#info-icon');
+
+        if (!info) {
+          console.warn('Icono info-icon no encontrado');
+          return;
+        }
+
+        info.addEventListener('mouseover', function () {
+
+          if (!chart.infoTooltip) {
+            chart.infoTooltip = chart.renderer
+              .label('%s', 10, 10)
+              .attr({
+                zIndex: 12,
+                fill: '#fff',
+                'stroke-width': 0.5,
+                stroke: 'black',
+                padding: 8,
+                r: 3
+              })
+              .add();
+          }
+
+          const iconBox = info.getBoundingClientRect();
+          const chartBox = chart.renderTo.getBoundingClientRect();
+
+          const x = iconBox.right - chartBox.left + 8;
+          const y = iconBox.top - chartBox.top - 4;
+
+          chart.infoTooltip.show();
+          chart.infoTooltip.attr({ x, y });
+        });
+
+        info.addEventListener('mouseout', function () {
+          chart.infoTooltip.hide();
+        });
+
+      }
+    ", tooltip_text))
+  )
+}
+
+cap_c1 <- caption_icono_tooltip(
+  caption = "",
+  tooltip_text = "Para hacer zoom, sombrear las barras dentro del gráfico de forma vertical. <br> 
+  Luego puede desplazarse usando el scrollbar."
+)
+
+```
+
+
 ```{r Avance por Area}
 
 contador_area <- principal %>% 
@@ -491,6 +583,8 @@ layout_column_wrap(
                   dataLabels=list(enabled=TRUE, format="<span style='color:{series.color}'>{point.z:.0f} ({point.y:.0f}%)</span>")) %>%
     hc_title(text = "Avance de Respuestas por División") %>%
     # hc_subtitle(text = "Frecuencias por Nivel de Respuesta") %>%
+    hc_chart(events = list(load = cap_c1$tooltip_js))%>%
+    hc_caption(text = cap_c1$caption_html, useHTML = TRUE, style=list(fontSize=16)) %>% 
     hc_xAxis(title = list(text = "")) %>% 
     hc_yAxis(title = list(text = "Porcentaje"),ceiling = 100, labels = list(format = "{text}%")) %>%
     hc_colors(c("#EBEBEB"))%>%
@@ -543,6 +637,8 @@ layout_column_wrap(
                   dataLabels=list(enabled=TRUE, format="<span style='color:{series.color}'>{point.z:.0f} ({point.y:.0f}%)</span>")) %>%
     hc_title(text = "Avance de Respuestas por Dirección") %>%
     # hc_subtitle(text = "Frecuencias por Nivel de Respuesta") %>%
+    hc_chart(events = list(load = cap_c1$tooltip_js))%>%
+    hc_caption(text = cap_c1$caption_html, useHTML = TRUE, style=list(fontSize=16)) %>% 
     hc_xAxis(title = list(text = "")) %>% 
     hc_yAxis(title = list(text = "Porcentaje"),ceiling = 100, labels = list(format = "{text}%")) %>%
     hc_colors(c("#EBEBEB"))%>%
